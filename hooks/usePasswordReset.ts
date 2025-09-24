@@ -18,7 +18,7 @@ export function usePasswordReset() {
     }
 
     const confirmReset = confirm(
-      `登録しているメールアドレス (${email}) にパスワードリセット用のメールを送信します。よろしいですか？`
+      `登録しているメールアドレス (${email}) にパスワードリセット用のメールを送信します。よろしいですか？`,
     )
     if (!confirmReset) return
 
@@ -27,7 +27,9 @@ export function usePasswordReset() {
     setMessage(null)
 
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: `${
+        process.env.NODE_ENV === "production" ? "https://travel-budget-weather-app.vercel.app" : window.location.origin
+      }/reset-password`,
     })
 
     if (resetError) {
