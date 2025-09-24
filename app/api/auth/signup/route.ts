@@ -26,11 +26,10 @@ export async function POST(req: Request) {
         data: {
           username: username,
         },
-        emailRedirectTo: `${
-          process.env.NODE_ENV === "production"
+        emailRedirectTo: `${process.env.NODE_ENV === "production"
             ? "https://travel-budget-weather-app.vercel.app"
             : process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || "http://localhost:3000"
-        }/api/auth/callback`,
+          }/dashboard`,
       },
     })
 
