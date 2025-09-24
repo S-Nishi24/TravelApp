@@ -30,14 +30,19 @@ export default function DashboardPage() {
   const [trips, setTrips] = useState<Trip[]>([])
   const [forecast, setForecast] = useState<Forecast[]>([])
   const [weatherError, setWeatherError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  // trips取得
+  // ログインチェック + trips取得
   useEffect(() => {
-    const fetchTrips = async () => {
+    const init = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser()
-      if (!user) return
+
+      if (!user) {
+        router.replace("/login") // 未ログインなら /login へ
+        return
+      }
 
       const { data, error } = await supabase
         .from("trips")
@@ -47,14 +52,15 @@ export default function DashboardPage() {
 
       if (error) {
         console.error("Failed to fetch trips:", error)
-        return
+      } else if (data) {
+        setTrips(data)
       }
 
-      if (data) setTrips(data)
+      setLoading(false)
     }
 
-    fetchTrips()
-  }, [])
+    init()
+  }, [router])
 
   const today = new Date()
   const nextTrip =
@@ -113,6 +119,10 @@ export default function DashboardPage() {
       month: "2-digit",
       day: "2-digit",
     })
+
+  if (loading) {
+    return <p className="p-4">読み込み中...</p>
+  }
 
   return (
     <div className="p-4 pt-16 h-screen flex flex-col lg:flex-row gap-6">
@@ -228,25 +238,7 @@ export default function DashboardPage() {
                     ) : weatherError ? (
                       <p className="text-red-500">{weatherError}</p>
                     ) : (
-                      (() => {
-                        if (!nextTrip) return <p>天気情報を取得中...</p>
-
-                        const today = new Date()
-                        today.setHours(0, 0, 0, 0)
-
-                        const [year, month, day] = nextTrip.start_date.split("-").map(Number)
-                        const tripDate = new Date(year, month - 1, day)
-                        const diffDays = Math.ceil((tripDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-
-                        if (diffDays > 0) {
-                          return (
-                            <p className="text-gray-500">
-                              旅行当日まであと {diffDays} 日。天気情報を取得できるまでお待ちください
-                            </p>
-                          )
-                        }
-                        return <p className="text-gray-500">天気情報を取得中...</p>
-                      })()
+                      <p className="text-gray-500">天気情報を取得中...</p>
                     )}
                   </CardContent>
                 </Card>
