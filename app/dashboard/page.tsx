@@ -63,7 +63,7 @@ export default function DashboardPage() {
   }, [router])
 
   const today = new Date()
-  const nextTrip =
+  const nearestTrip =
     trips
       .filter((trip) => new Date(trip.start_date) >= today)
       .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())[0] || null
@@ -71,9 +71,9 @@ export default function DashboardPage() {
   // 天気取得
   useEffect(() => {
     const fetchWeather = async () => {
-      if (!nextTrip) return
+      if (!nearestTrip) return
       try {
-        const res = await fetch(`/api/weather?city=${encodeURIComponent(nextTrip.cityEn)}`)
+        const res = await fetch(`/api/weather?city=${encodeURIComponent(nearestTrip.cityEn)}`)
 
         if (!res.ok) {
           const errorData = await res.json()
@@ -87,7 +87,7 @@ export default function DashboardPage() {
           return
         }
 
-        const tripStartDateStr = nextTrip.start_date.split("T")[0]
+        const tripStartDateStr = nearestTrip.start_date.split("T")[0]
         const filtered: Forecast[] = data.list
           .filter((item: { dt_txt: string }) => item.dt_txt.startsWith(tripStartDateStr))
           .map(
@@ -111,9 +111,9 @@ export default function DashboardPage() {
     }
 
     fetchWeather()
-  }, [nextTrip])
+  }, [nearestTrip])
 
-  const formatDate = (dateString: string) =>
+  const formatTripDate = (dateString: string) =>
     new Date(dateString).toLocaleDateString("ja-JP", {
       year: "numeric",
       month: "2-digit",
@@ -147,7 +147,7 @@ export default function DashboardPage() {
                     >
                       <h3 className="font-medium text-sm">{trip.title}</h3>
                       <p className="text-xs text-gray-600 mt-1">
-                        {formatDate(trip.start_date)} 〜 {formatDate(trip.end_date)}
+                        {formatTripDate(trip.start_date)} 〜 {formatTripDate(trip.end_date)}
                       </p>
                     </div>
                   ))
@@ -170,34 +170,34 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {nextTrip ? (
+            {nearestTrip ? (
               <>
                 {/* 基本情報 */}
                 <div>
-                  <h2 className="text-3xl font-bold text-blue-600 mb-2">{nextTrip.title}</h2>
+                  <h2 className="text-3xl font-bold text-blue-600 mb-2">{nearestTrip.title}</h2>
                   <p className="text-lg text-gray-700">
-                    {formatDate(nextTrip.start_date)} 〜 {formatDate(nextTrip.end_date)}
+                    {formatTripDate(nearestTrip.start_date)} 〜 {formatTripDate(nearestTrip.end_date)}
                   </p>
                   <p className="text-md text-gray-600 mt-2 flex items-center gap-1">
                     <DollarSign className="w-4 h-4 text-green-600" />
-                    予算: ¥{nextTrip.budget.toLocaleString()}
+                    予算: ¥{nearestTrip.budget.toLocaleString()}
                   </p>
                   <p className="text-md text-gray-600 flex items-center gap-1">
                     <Cloud className="w-4 h-4 text-blue-500" />
-                    都市: {nextTrip.cityName}
+                    都市: {nearestTrip.cityName}
                   </p>
                 </div>
 
                 {/* ボタン */}
                 <div className="flex flex-wrap gap-2">
                   <Button
-                    onClick={() => router.push(`/trips/${nextTrip.id}`)}
+                    onClick={() => router.push(`/trips/${nearestTrip.id}`)}
                     className="bg-gray-500 hover:bg-gray-600"
                   >
                     詳細確認
                   </Button>
                   <Button
-                    onClick={() => router.push(`/trips/${nextTrip.id}/expenses/new`)}
+                    onClick={() => router.push(`/trips/${nearestTrip.id}/expenses/new`)}
                     className="bg-blue-600 hover:bg-blue-700"
                   >
                     支出登録
