@@ -11,7 +11,7 @@ import { supabase } from "@/lib/supabaseClient"
 
 interface ExpenseForm {
   title: string
-  amount: number
+  amount: string // 数字だけど一旦文字列で管理
   category: string
   date: string
   memo: string
@@ -23,14 +23,14 @@ export default function NewExpensePage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const [form, setForm] = useState<ExpenseForm>({
     title: "",
-    amount: 0,
+    amount: "", // 数字だけど一旦文字列で管理
     category: CATEGORY_OPTIONS[0],
     date: "",
     memo: "",
   })
   const [message, setMessage] = useState<string | null>(null)
 
-  const handleChange = (field: keyof ExpenseForm, value: string | number) => {
+  const handleChange = (field: keyof ExpenseForm, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
@@ -41,7 +41,7 @@ export default function NewExpensePage({ params }: { params: { id: string } }) {
       {
         trip_id: params.id,
         title: form.title,
-        amount: form.amount,
+        amount: Number(form.amount), // 文字列 → 数字に変換
         category: form.category,
         date: form.date,
         memo: form.memo,
@@ -53,7 +53,7 @@ export default function NewExpensePage({ params }: { params: { id: string } }) {
       return
     }
 
-    setMessage("登録が完了しました。")
+    setMessage("支出の登録が完了しました！自動で旅行詳細画面に戻ります。")
 
     // 1.5秒後に旅行詳細画面に遷移
     setTimeout(() => {
@@ -91,11 +91,17 @@ export default function NewExpensePage({ params }: { params: { id: string } }) {
                   id="amount"
                   type="number"
                   value={form.amount}
-                  onChange={(e) => handleChange("amount", Number(e.target.value) || 0)}
                   placeholder="例: 13000"
-                  min={0}
+                  min={0}   // HTML側の制約
                   required
                   className="mt-1"
+                  onChange={(e) => {
+                    const val = e.target.value
+                    // 空文字は許可、0以上の値のみ反映
+                    if (val === "" || Number(val) >= 0) {
+                      handleChange("amount", val)
+                    }
+                  }}
                 />
               </div>
 
@@ -143,11 +149,19 @@ export default function NewExpensePage({ params }: { params: { id: string } }) {
               <Button type="submit" className="w-full">
                 登録
               </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full mt-2"
+                onClick={() => router.back()}
+              >
+                前の画面に戻る
+              </Button>
             </form>
           </CardContent>
         </Card>
 
-        {/* 登録完了メッセージ */}
         {message && (
           <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded shadow-md transition-opacity duration-500">
             {message}

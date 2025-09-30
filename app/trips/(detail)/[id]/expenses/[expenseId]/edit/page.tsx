@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 
@@ -21,7 +20,7 @@ export default function ExpenseEditPage({
   const router = useRouter()
   const [formData, setFormData] = useState({
     title: "",
-    amount: "",
+    amount: "",  // number → string に変更
     category: "",
     date: "",
     memo: "",
@@ -58,7 +57,7 @@ export default function ExpenseEditPage({
       .from("expenses")
       .update({
         title: formData.title,
-        amount: Number(formData.amount),
+        amount: Number(formData.amount), // 文字列 → 数値
         category: formData.category,
         date: formData.date,
         memo: formData.memo,
@@ -70,7 +69,7 @@ export default function ExpenseEditPage({
       return
     }
 
-    setMessage("更新が完了しました。")
+    setMessage("更新が完了しました。自動で旅行詳細画面に戻ります。")
 
     // 1.5秒後に旅行詳細画面へ戻る
     setTimeout(() => {
@@ -85,13 +84,7 @@ export default function ExpenseEditPage({
   return (
     <div className="flex justify-center p-6 pt-16 relative">
       <div className="w-full max-w-2xl">
-        <div className="mb-6">
-          <Button variant="ghost" onClick={handleCancel} className="mb-4">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            前の画面に戻る
-          </Button>
-          <h1 className="text-3xl font-bold text-gray-900 text-center">支出編集</h1>
-        </div>
+        <h1 className="text-3xl font-bold text-gray-900 text-center mb-6">支出編集</h1>
 
         <Card>
           <CardHeader>
@@ -118,8 +111,15 @@ export default function ExpenseEditPage({
                   inputMode="numeric"
                   pattern="[0-9]*"
                   value={formData.amount}
-                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                  placeholder="例: 13000"
+                  min={0} // HTML側制約
                   required
+                  onChange={(e) => {
+                    const val = e.target.value
+                    if (val === "" || Number(val) >= 0) {
+                      setFormData({ ...formData, amount: val })
+                    }
+                  }}
                 />
               </div>
 
@@ -167,7 +167,7 @@ export default function ExpenseEditPage({
                 <Button type="submit" className="flex-1">
                   更新
                 </Button>
-                <Button type="button" variant="outline" onClick={handleCancel} className="flex-1 bg-transparent">
+                <Button type="button" variant="outline" onClick={handleCancel} className="flex-1">
                   キャンセル
                 </Button>
               </div>
