@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { supabase } from "@/lib/supabaseClient"
 import { Cloud, Calendar, DollarSign } from "lucide-react"
+import Image from "next/image"
 
 interface Trip {
   id: string
@@ -131,7 +132,7 @@ export default function DashboardPage() {
         <Card className="h-full flex flex-col">
           <CardHeader className="flex items-center justify-between">
             <CardTitle className="text-lg">旅行一覧</CardTitle>
-            <Button onClick={() => router.push(`/trips/new`)} className="bg-blue-600 hover:bg-blue-700" size="sm">
+            <Button onClick={() => router.push("/trips/new")} className="bg-blue-600 hover:bg-blue-700" size="sm">
               新規登録
             </Button>
           </CardHeader>
@@ -224,11 +225,18 @@ export default function DashboardPage() {
                               <span className="text-xs text-gray-500 mb-1">
                                 {item.dt_txt.split(" ")[1].slice(0, 5)}
                               </span>
-                              <img
+                              {/* <img
                                 src={`https://openweathermap.org/img/wn/${item.icon}@2x.png`}
                                 alt=""
                                 className="w-12 h-12"
-                              />
+                              /> */}
+                              <Image
+  src={`https://openweathermap.org/img/wn/${item.icon}@2x.png`}
+  alt="Weather icon"
+  width={48}   // px単位
+  height={48}  // px単位
+  className="w-12 h-12"
+/>
                               <span className="text-xs text-center capitalize">{item.condition}</span>
                               <span className="text-sm">{item.temp}°C</span>
                             </div>

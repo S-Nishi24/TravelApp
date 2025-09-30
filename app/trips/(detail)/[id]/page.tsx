@@ -8,6 +8,7 @@ import { Edit, Plus, Edit2, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { supabase } from "@/lib/supabaseClient"
 import DashboardGraphs from "@/components/DashboardGraphs"
+import Image from "next/image"
 import {
   Dialog,
   DialogContent,
@@ -168,7 +169,15 @@ export default function TripDetailPage({ params }: { params: { id: string } }) {
   }
 
   const getWeatherIcon = (icon: string) => {
-    return <img src={`https://openweathermap.org/img/wn/${icon}@2x.png`} alt="" className="w-12 h-12" />
+    return (
+      <Image
+        src={`https://openweathermap.org/img/wn/${icon}@2x.png`}
+        alt="Weather icon"
+        width={48}
+        height={48}
+        className="w-12 h-12"
+      />
+    )
   }
 
   if (!trip) return <div className="flex justify-center items-center min-h-screen">読み込み中...</div>
