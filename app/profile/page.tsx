@@ -19,6 +19,7 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const { sendResetEmail, message: resetMessage, error: resetError, loading: resetLoading } = usePasswordReset()
 
@@ -107,44 +108,54 @@ export default function ProfilePage() {
 
   // 退会処理（DB削除 + Auth削除）
   const handleDeleteAccount = async () => {
-    const confirmDelete = confirm("本当にアカウントを削除しますか？この操作は取り消せません。")
+    const confirmDelete = confirm(
+      "本当にアカウントを削除しますか？この操作は取り消せません。"
+    )
     if (!confirmDelete) return
 
+    setIsDeleting(true)
     setError(null)
     setMessage(null)
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) {
-      setError("ユーザー情報が取得できません")
-      return
-    }
-
-    // 1. データベース内の関連データ削除
-    const { error: dbError } = await supabase.rpc("delete_user_data", { uid: user.id })
-    if (dbError) {
-      setError("データベース削除に失敗しました: " + dbError.message)
-      return
-    }
-
     try {
-      // 2. Auth ユーザー削除（Supabase JS/TS クライアント経由）
-      const { error: authError } = await supabase.auth.admin.deleteUser(user.id)
-      if (authError) {
-        setError("認証情報削除に失敗しました: " + authError.message)
+      // 1. セッション取得
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession()
+
+      if (sessionError || !session) {
+        setError("ログインが必要です")
+        setIsDeleting(false)
         return
       }
 
-      setMessage("ユーザー情報の削除が完了しました")
-      setTimeout(() => {
-        router.push("/login")
-      }, 2000)
-    } catch (error) {
-      console.error("[v0] アカウント削除中にエラーが発生しました:", error)
-      setError(error instanceof Error ? error.message : "アカウント削除中にエラーが発生しました")
+      const userId = session.user.id
+
+      // 2. route.ts へ POST リクエスト
+      const response = await fetch("/api/delete-account", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || "退会処理中にエラーが発生しました")
+      } else {
+        setMessage("退会処理が完了しました。ログイン画面に移動します。")
+        setTimeout(() => router.push("/login"), 2000)
+      }
+    } catch (err) {
+      console.error("[ProfilePage] 退会処理エラー:", err)
+      setError(err instanceof Error ? err.message : "退会処理中にエラーが発生しました")
+    } finally {
+      setIsDeleting(false)
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -237,12 +248,20 @@ export default function ProfilePage() {
 
             <Separator />
 
-            {/* <div className="space-y-4">
+            <div className="mt-6">
               <h3 className="text-lg font-medium text-red-600">危険な操作</h3>
-              <Button onClick={handleDeleteAccount} variant="destructive" className="w-full sm:w-auto">
-                退会
+              <Button
+                onClick={handleDeleteAccount}
+                disabled={isDeleting}
+                variant="destructive"
+                className="w-full sm:w-auto py-2 px-4"
+              >
+                {isDeleting ? "退会処理中..." : "退会"}
               </Button>
-            </div> */}
+            </div>
+
+            {error && <p className="text-red-500 mt-2">{error}</p>}
+            {message && <p className="text-green-500 mt-2">{message}</p>}
           </CardContent>
         </Card>
       </div>
