@@ -225,18 +225,13 @@ export default function DashboardPage() {
                               <span className="text-xs text-gray-500 mb-1">
                                 {item.dt_txt.split(" ")[1].slice(0, 5)}
                               </span>
-                              {/* <img
-                                src={`https://openweathermap.org/img/wn/${item.icon}@2x.png`}
-                                alt=""
-                                className="w-12 h-12"
-                              /> */}
                               <Image
-  src={`https://openweathermap.org/img/wn/${item.icon}@2x.png`}
-  alt="Weather icon"
-  width={48}   // px単位
-  height={48}  // px単位
-  className="w-12 h-12"
-/>
+                                src={`https://openweathermap.org/img/wn/${item.icon}@2x.png`}
+                                alt="Weather icon"
+                                width={48}   // px単位
+                                height={48}  // px単位
+                                className="w-12 h-12"
+                              />
                               <span className="text-xs text-center capitalize">{item.condition}</span>
                               <span className="text-sm">{item.temp}°C</span>
                             </div>

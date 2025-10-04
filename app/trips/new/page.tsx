@@ -51,11 +51,19 @@ export default function NewTripPage() {
         return
       }
 
+      const start = new Date(startDate)
+      const end = new Date(endDate)
+      if (end < start) {
+        setError("終了日は開始日以降の日付を選択してください")
+        setLoading(false)
+        return
+      }
+
       const { error: insertError } = await supabase.from("trips").insert([
         {
           user_id: user.id,
           title,
-          prefecture,       // 追加
+          prefecture,
           cityName,
           cityEn,
           start_date: startDate,
@@ -143,6 +151,7 @@ export default function NewTripPage() {
                   type="date"
                   id="endDate"
                   value={endDate}
+                  min={startDate || undefined}
                   onChange={(e) => setEndDate(e.target.value)}
                   className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required

@@ -47,6 +47,7 @@ export default function EditTripPage({ params }: { params: { id: string } }) {
   })
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   // -----------------------
   // 旅行情報取得
@@ -79,6 +80,16 @@ export default function EditTripPage({ params }: { params: { id: string } }) {
   // -----------------------
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null) // 送信前にリセット
+
+    const start = new Date(trip.start_date)
+    const end = new Date(trip.end_date)
+
+    if (end < start) {
+      setError("終了日は開始日以降の日付を選択してください。")
+      return
+    }
+
     const { error } = await supabase
       .from("trips")
       .update({
@@ -95,6 +106,7 @@ export default function EditTripPage({ params }: { params: { id: string } }) {
 
     if (error) {
       console.error("更新エラー:", error)
+      setError("旅行情報の更新に失敗しました。")
       return
     }
 
@@ -184,6 +196,7 @@ export default function EditTripPage({ params }: { params: { id: string } }) {
                     id="end_date"
                     type="date"
                     value={trip.end_date}
+                    min={trip.start_date || undefined} // 開始日より前を選べないように
                     onChange={(e) => handleInputChange("end_date", e.target.value)}
                     required
                     className="mt-1"
@@ -218,6 +231,13 @@ export default function EditTripPage({ params }: { params: { id: string } }) {
                   className="mt-1"
                 />
               </div>
+
+              {/* エラー表示 */}
+              {error && (
+                <div className="p-3 rounded-md bg-red-50 text-red-700">
+                  {error}
+                </div>
+              )}
 
               {/* ボタン */}
               <div className="flex flex-col space-y-3">
