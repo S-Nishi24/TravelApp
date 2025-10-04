@@ -87,7 +87,7 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <Link href="/dashboard" className="text-xl font-bold text-white">
+            <Link href="/dashboard" title="ダッシュボードへ移動" className="p-2 rounded-lg text-xl font-bold text-white hover:bg-sky-400/80 hover:shadow-md hover:shadow-sky-700/30">
               Travel Planner
             </Link>
           </div>
